@@ -8,7 +8,7 @@ const cancelDeleteBtn = document.getElementById("cancelDelete");
 let tasks = [];
 let taskToDelete = null;
 
-// Helpers to create button with icon
+// Helper to create button with icon
 function createIconButton(btnClass, iconPath, alt, text) {
   const btn = document.createElement("button");
   btn.className = btnClass;
@@ -34,12 +34,19 @@ function renderTasks() {
       input.type = "text";
       input.value = task.text;
       input.className = "task-input";
-      li.appendChild(input);
+      input.autofocus = true;
+
+      let saveBtn;
+      input.addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+          saveBtn.click();
+        }
+      });
 
       const actionsDiv = document.createElement("div");
       actionsDiv.className = "todo-actions";
 
-      const saveBtn = createIconButton(
+      saveBtn = createIconButton(
         "edit-btn",
         "./components/icons8-edit-32.png",
         "Save",
@@ -51,6 +58,9 @@ function renderTasks() {
           tasks[i].text = newText;
           tasks[i].editing = false;
           renderTasks();
+        } else {
+          input.focus();
+          input.style.borderColor = "#ef4444";
         }
       };
       actionsDiv.appendChild(saveBtn);
@@ -67,7 +77,10 @@ function renderTasks() {
       };
       actionsDiv.appendChild(cancelBtn);
 
+      li.appendChild(input);
       li.appendChild(actionsDiv);
+
+      setTimeout(() => input.focus(), 0);
     } else {
       const span = document.createElement("span");
       span.className = "todo-text";
@@ -84,7 +97,10 @@ function renderTasks() {
         "Edit"
       );
       editBtn.onclick = () => {
-        tasks[i].editing = true;
+        // Only one task in edit mode at a time
+        tasks.forEach((t, idx) => {
+          t.editing = idx === i;
+        });
         renderTasks();
       };
       actionsDiv.appendChild(editBtn);
@@ -112,6 +128,8 @@ taskForm.addEventListener("submit", function (e) {
   e.preventDefault();
   const value = taskInput.value.trim();
   if (value !== "") {
+    // Reset all editing state when adding new task
+    tasks.forEach((t) => (t.editing = false));
     tasks.push({ text: value });
     taskInput.value = "";
     renderTasks();
