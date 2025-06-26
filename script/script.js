@@ -1,5 +1,3 @@
-// Simple To-do List with edit/delete and modal confirmation
-
 const taskForm = document.getElementById("taskForm");
 const taskInput = document.getElementById("taskInput");
 const todoList = document.getElementById("todoList");
@@ -9,8 +7,6 @@ const cancelDeleteBtn = document.getElementById("cancelDelete");
 
 let tasks = [];
 let taskToDelete = null;
-let isEditMode = false;
-let editTaskIndex = null;
 
 // Helpers to create button with icon
 function createIconButton(btnClass, iconPath, alt, text) {
@@ -27,7 +23,6 @@ function createIconButton(btnClass, iconPath, alt, text) {
   return btn;
 }
 
-// Render tasks
 function renderTasks() {
   todoList.innerHTML = "";
   tasks.forEach((task, i) => {
@@ -35,14 +30,15 @@ function renderTasks() {
     li.className = "todo-item";
 
     if (task.editing) {
-      // Editing mode: show input + save/cancel
       const input = document.createElement("input");
       input.type = "text";
       input.value = task.text;
       input.className = "task-input";
       li.appendChild(input);
 
-      // Save button
+      const actionsDiv = document.createElement("div");
+      actionsDiv.className = "todo-actions";
+
       const saveBtn = createIconButton(
         "edit-btn",
         "./components/icons8-edit-32.png",
@@ -57,9 +53,8 @@ function renderTasks() {
           renderTasks();
         }
       };
-      li.appendChild(saveBtn);
+      actionsDiv.appendChild(saveBtn);
 
-      // Cancel button
       const cancelBtn = createIconButton(
         "cancel-btn",
         "./components/icons8-edit-32.png",
@@ -70,15 +65,18 @@ function renderTasks() {
         tasks[i].editing = false;
         renderTasks();
       };
-      li.appendChild(cancelBtn);
+      actionsDiv.appendChild(cancelBtn);
+
+      li.appendChild(actionsDiv);
     } else {
-      // Normal mode
       const span = document.createElement("span");
       span.className = "todo-text";
       span.textContent = task.text;
       li.appendChild(span);
 
-      // Edit button
+      const actionsDiv = document.createElement("div");
+      actionsDiv.className = "todo-actions";
+
       const editBtn = createIconButton(
         "edit-btn",
         "./components/icons8-edit-32.png",
@@ -89,9 +87,8 @@ function renderTasks() {
         tasks[i].editing = true;
         renderTasks();
       };
-      li.appendChild(editBtn);
+      actionsDiv.appendChild(editBtn);
 
-      // Delete button
       const deleteBtn = createIconButton(
         "delete-btn",
         "./components/icons8-trash.svg",
@@ -102,14 +99,15 @@ function renderTasks() {
         taskToDelete = i;
         modalOverlay.classList.remove("hidden");
       };
-      li.appendChild(deleteBtn);
+      actionsDiv.appendChild(deleteBtn);
+
+      li.appendChild(actionsDiv);
     }
 
     todoList.appendChild(li);
   });
 }
 
-// Add task
 taskForm.addEventListener("submit", function (e) {
   e.preventDefault();
   const value = taskInput.value.trim();
@@ -120,7 +118,6 @@ taskForm.addEventListener("submit", function (e) {
   }
 });
 
-// Modal Delete
 confirmDeleteBtn.addEventListener("click", function () {
   if (taskToDelete !== null) {
     tasks.splice(taskToDelete, 1);
@@ -133,14 +130,10 @@ cancelDeleteBtn.addEventListener("click", function () {
   taskToDelete = null;
   modalOverlay.classList.add("hidden");
 });
-
-// Optional: close modal if click outside modal
 modalOverlay.addEventListener("click", function (e) {
   if (e.target === modalOverlay) {
     modalOverlay.classList.add("hidden");
     taskToDelete = null;
   }
 });
-
-// Initial render
 renderTasks();
